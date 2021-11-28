@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1638084137 source:c:\users\asus\desktop\c_plusplus_project\accountmanagement\main.cpp
+	<iostream>
+	<fstream>
+	<string.h>
+	<math.h>
+	<unistd.h>
+	<direct.h>
+	<limits.h>
+
