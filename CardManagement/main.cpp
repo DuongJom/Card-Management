@@ -149,7 +149,7 @@ public:
     }
 
     virtual void getMoney(long money){
-        if(this->getStatus()==0){
+        if(this->getStatus()==true){
             if(this->getType()==0){
                 if(this->getBalance()<=0){
                     cout<<">>>(*)NOTICE: YOU OWE THE BANK "<<this->getBankName()<<": "<<abs(this->getBalance())<<" VND"<<endl;
@@ -368,7 +368,6 @@ void WithDrawMoney(Card cards[], int n, char accountNumber[], long getMoney){
     if(index!=-1){
         //Goi ham getMoney() cua class Card
         cards[index].getMoney(getMoney);
-        cout<<">>> WITHDRAW SUCCESSFULLY!";
     }
     else{
         cout<<">>> CAN'T FIND CARD HAS ACCOUNT NUMBER "<<accountNumber<<"!"<<endl;
