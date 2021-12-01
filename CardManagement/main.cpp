@@ -152,7 +152,14 @@ public:
         if(this->getStatus()==true){
             if(this->getType()==0){
                 if(this->getBalance()<=0){
+                    this->setBalance(this->getBalance()-money);
                     cout<<">>>(*)NOTICE: YOU OWE THE BANK "<<this->getBankName()<<": "<<abs(this->getBalance())<<" VND"<<endl;
+                    return;
+                }
+                else{
+                    this->setBalance(this->getBalance()-money);
+                    cout<<">>> WITHDRAW SUCCESSFULLY!"<<endl;
+                    return;
                 }
             }
             else if(this->getType()==1){
@@ -160,8 +167,12 @@ public:
                     cout<<">>> YOU DON'T HAVE ENOUGH BALANCE TO WITHDRAW!"<<endl;
                     return;
                 }
+                else{
+                    this->setBalance(this->getBalance()-money);
+                    cout<<">>> WITHDRAW SUCCESSFULLY!"<<endl;
+                    return;
+                }
             }
-            this->setBalance(this->getBalance()-money);
         }
         else{
             cout<<">>> ACCOUNT WAS DISABLE!"<<endl;
