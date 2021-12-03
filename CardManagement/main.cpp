@@ -125,7 +125,7 @@ public:
         //Nhap thong tin khac cua card tu dong 124->130
         cout<<"Enter name's customer: ";
         cin.getline(customerName,sizeof(customerName)/sizeof(char));
-        cout<<"Enter effective date: ";
+        cout<<"Enter effective date(dd/MM/yyyy or MM/dd/yyyy): ";
         cin>>dateEffect;
         cin.ignore();
         cout<<"Enter name's bank: ";
@@ -150,20 +150,27 @@ public:
 
     virtual void getMoney(long money){
         if(this->getStatus()==true){
-            if(this->getType()==0){
+            if(this->getType()==0){//CREDIT CARD
                 if(this->getBalance()<=0){
                     this->setBalance(this->getBalance()-money);
                     cout<<">>>(*)NOTICE: YOU OWE THE BANK "<<this->getBankName()<<": "<<abs(this->getBalance())<<" VND"<<endl;
                     return;
                 }
                 else{
-                    this->setBalance(this->getBalance()-money);
-                    cout<<">>> WITHDRAW SUCCESSFULLY!"<<endl;
-                    return;
+                    if(this->getBalance()<money){
+                        this->setBalance(this->getBalance()-money);
+                        cout<<">>>(*)NOTICE: YOU OWE THE BANK "<<this->getBankName()<<": "<<abs(this->getBalance())<<" VND"<<endl;
+                        return;
+                    }
+                    else{
+                        this->setBalance(this->getBalance()-money);
+                        cout<<">>> WITHDRAW SUCCESSFULLY!"<<endl;
+                        return;
+                    }
                 }
             }
-            else if(this->getType()==1){
-                if(this->getBalance()<=0){
+            else if(this->getType()==1){ //DEBIT CARD
+                if(this->getBalance()<=0 || this->getBalance()<money){
                     cout<<">>> YOU DON'T HAVE ENOUGH BALANCE TO WITHDRAW!"<<endl;
                     return;
                 }
@@ -184,11 +191,12 @@ class CreditCard: public Card{
 public:
     //Ke thua ham khoi tao cua lop Card
     using Card::Card;
-    //Dinh nghia lai ham tru tuong cua lop Card(dong 171-177)
+    //Dinh nghia lai ham tru tuong cua lop Card(dong 147-149)
     void sendMoney(long _sendMoney){
         this->setBalance(this->getBalance()+_sendMoney);
     }
 
+	//Dinh nghia lai ham tru tuong cua lop Card(dong 151-181)
     void getMoney(long _getMoney){
         this->setBalance(this->getBalance()-_getMoney);
     }
@@ -198,11 +206,12 @@ class DebitCard:public Card{
 public:
     //Ke thua ham khoi tao cua lop Card
     using Card::Card;
-    //Dinh nghia lai ham tru tuong cua lop Card(dong 184-197)
+    //Dinh nghia lai ham tru tuong cua lop Card(dong 147-149)
     void sendMoney(long _sendMoney){
         this->setBalance(this->getBalance()+_sendMoney);
     }
 
+	//Dinh nghia lai ham tru tuong cua lop Card(dong 151-181)
     void getMoney(long _getMoney){
         if(this->getBalance()==0 || this->getBalance()<_getMoney){
             cout<<"Your account does not have enough funds to withdraw!"<<endl;
@@ -337,7 +346,6 @@ void updateCard(Card cards[], int n, int choice, char accountNumber[], char newI
     else{
         cout<<">>> ACCOUNT NOT EXIST!"<<endl;
     }
-
 }
 
 //Ham thay doi trang thai card
@@ -391,7 +399,7 @@ void removeCard(Card cards[], int &n, char accountNumber[]){
     int index = getCardByAccountNumber(cards,n,accountNumber);
     //Account ton tai
     if(index!=-1){
-        for(int i=n-1;i>=0;i--){
+        for(int i=n-1;i>=0;i--){  //1 2 3 4 --> 1 3 4
             //Tim thay phan tu can xoa
             if(i==index){
                     //Tien hanh xoa phan tu
@@ -426,7 +434,7 @@ void showListCard(Card cards[], int n){
 }
 
 //Ham luu thong tin card vao file nhi phan(Binary File)
-void writeListCardToTextFile(Card cards[], int n, char* fileName){
+void writeListCardToBinaryFile(Card cards[], int n, char* fileName){
     //Mo file de ghi
     FILE* f = fopen(fileName,"wb");
     //Kiem tra file ton tai hay khong
@@ -442,7 +450,7 @@ void writeListCardToTextFile(Card cards[], int n, char* fileName){
 	}
 	//Dong file
 	fclose(f);
-    cout<<">>> EXPORT TO TEXT FILE SUCESSFULLY!"<<endl;
+    cout<<">>> EXPORT TO BINARY FILE SUCESSFULLY!"<<endl;
     //Lay duong dan luu file
     char buff[PATH_MAX];
     _getcwd(buff,PATH_MAX);
@@ -451,7 +459,7 @@ void writeListCardToTextFile(Card cards[], int n, char* fileName){
 }
 
 //Ham doc thong tin card tu file nhi phan(Binary File)
-void readListCardFromTextFile(Card cards[], int &n, char* fileName){
+void readListCardFromBinaryFile(Card cards[], int &n, char* fileName){
     //Mo file de doc
     FILE* f = fopen(fileName,"rb");
     //Kiem tra file ton tai hay khong
@@ -468,7 +476,7 @@ void readListCardFromTextFile(Card cards[], int &n, char* fileName){
 	}
 	//Dong file
 	fclose(f);
-    cout<<">>> IMPORT FROM TEXT FILE SUCCESSFULLY!"<<endl;
+    cout<<">>> IMPORT FROM BINARY FILE SUCCESSFULLY!"<<endl;
 }
 
 int menu(){
