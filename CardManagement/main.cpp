@@ -109,27 +109,49 @@ public:
         }
         return true;
     }
+
+    bool checkNullValue(char info[]){
+        if(strcmp(info,"")==0){
+            return false;
+        }
+        return true;
+    }
     //Ham nhap thong tin cho card
     void typeInfo(){
         //Neu nhap account number khong hop le thi cho nhap lai
+        cin.ignore();
         do{
             cout<<"Enter account number: ";
-            cin>>accountNumber;
+            cin.getline(accountNumber,sizeof(accountNumber)/sizeof(char));
             //Kiem tra account number hop le hay khong
-            if(checkAccountNumberValid(accountNumber)==false){
+            if(checkAccountNumberValid(accountNumber)==false || checkNullValue(accountNumber)==false){
                 cout<<">>> INVALID ACCOUNT NUMBER!"<<endl;
             }
-        }while(checkAccountNumberValid(accountNumber)==false);
-        //Xoa bo nho dem
-        cin.ignore();
-        //Nhap thong tin khac cua card tu dong 124->130
-        cout<<"Enter name's customer: ";
-        cin.getline(customerName,sizeof(customerName)/sizeof(char));
-        cout<<"Enter effective date(dd/MM/yyyy or MM/dd/yyyy): ";
-        cin>>dateEffect;
-        cin.ignore();
-        cout<<"Enter name's bank: ";
-        cin.getline(bankName,sizeof(bankName)/sizeof(char));
+        }while(checkAccountNumberValid(accountNumber)==false || checkNullValue(accountNumber)==false);
+
+        do{
+            cout<<"Enter name's customer: ";
+            cin.getline(customerName,sizeof(customerName)/sizeof(char));
+            if(checkNullValue(customerName)==false){
+                cout<<">>> INVALID VALUE!"<<endl;
+            }
+        }while(checkNullValue(customerName)==false);
+
+        do{
+            cout<<"Enter effective date(dd/MM/yyyy): ";
+            cin.getline(dateEffect,sizeof(dateEffect)/sizeof(char));
+            if(checkNullValue(dateEffect)==false){
+                cout<<">>> INVALID VALUE!"<<endl;
+            }
+        }while(checkNullValue(dateEffect)==false);
+
+        do{
+            cout<<"Enter name's bank: ";
+            cin.getline(bankName,sizeof(bankName)/sizeof(char));
+            if(checkNullValue(bankName)==false){
+                cout<<">>> INVALID VALUE!"<<endl;
+            }
+        }while(checkNullValue(bankName)==false);
     }
 
     //Ham hien thi thong tin Card ra man hinh console
@@ -433,6 +455,68 @@ void showListCard(Card cards[], int n){
     cout<<"COMPLETE SUCCESSFULLY!"<<endl;
 }
 
+bool checkCustomerExist(Card cards[], int n, char cusName[]){
+    for(int i=0;i<n;i++){
+        if(strcmp(cards[i].getCustomerName(),cusName)==0){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool checkBankExist(Card cards[], int n, char bank[]){
+    for(int i=0;i<n;i++){
+        if(strcmp(cards[i].getBankName(),bank)==0){
+            return true;
+        }
+    }
+    return false;
+}
+
+//Ham tra ve danh sach the so huu cua khach hang ten tuong ung
+void findListCardByCustomerName(Card cards[], int n, char customerName[]){
+    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
+    printf("|%-15s|%-25s|%12s|%-20s|%-15s|%-15s|\n","Account","Customer","Effective date","Bank","Balance","Status");
+    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
+    if(checkCustomerExist(cards,n,customerName)==true){
+        //Duyet qua toan bo danh sach
+        for(int i=0;i<n;i++){
+            if(strcmp(cards[i].getCustomerName(),customerName)==0){
+                //In thong tin cua tung doi tuong card trong danh sach
+                cards[i].showInfo();
+            }
+        }
+    }
+    else{
+        printf("|%15s|%25s|%14s|%20s|%15s|%15s|\n"," "," "," "," "," "," ");
+    }
+    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
+    cout<<"COMPLETE SUCCESSFULLY!"<<endl;
+}
+
+void statisticAmountOfCardByBank(Card cards[], int n, char bank[]){
+    if(checkBankExist(cards,n,bank)==true){
+        int numberOfCredit=0, numberOfDebit=0;
+        for(int i=0;i<n;i++){
+            if(strcmp(cards[i].getBankName(),bank)==0){
+                if(cards[i].getType()==0){
+                    numberOfCredit++;
+                }
+                else{
+                    numberOfDebit++;
+                }
+            }
+        }
+        cout<<"The "<<strupr(bank)<<" has:"<<endl;
+        cout<<"\t+ CREDIT CARD: "<<numberOfCredit<<endl;
+        cout<<"\t+ DEBIT CARD: "<<numberOfDebit<<endl;
+        cout<<"COMPLETE SUCCESSFULLY!"<<endl;
+    }
+    else{
+        cout<<">>> INVALID BANK!"<<endl;
+    }
+}
+
 //Ham luu thong tin card vao file nhi phan(Binary File)
 void writeListCardToBinaryFile(Card cards[], int n, char* fileName){
     //Mo file de ghi
@@ -480,18 +564,20 @@ void readListCardFromBinaryFile(Card cards[], int &n, char* fileName){
 }
 
 int menu(){
-    cout<<"+--------------------MENU---------------------+"<<endl;
-    cout<<"|          1. Add new card                    |"<<endl;
-    cout<<"|          2. Update information card         |"<<endl;
-    cout<<"|          3. Show list cards                 |"<<endl;
-    cout<<"|          4. Send money                      |"<<endl;
-    cout<<"|          5. Withdraw money                  |"<<endl;
-    cout<<"|          6. Remove card                     |"<<endl;
-    cout<<"|          7. Change status of card           |"<<endl;
-    cout<<"|          8. Write list of cards to file     |"<<endl;
-    cout<<"|          9. Read list of card from file     |"<<endl;
-    cout<<"|         10. Exit                            |"<<endl;
-    cout<<"+---------------------------------------------+"<<endl;
+    cout<<"+--------------------MENU---------------------------+"<<endl;
+    cout<<"|          1. Add new card                          |"<<endl;
+    cout<<"|          2. Update information card               |"<<endl;
+    cout<<"|          3. Show list cards                       |"<<endl;
+    cout<<"|          4. Send money                            |"<<endl;
+    cout<<"|          5. Withdraw money                        |"<<endl;
+    cout<<"|          6. Remove card                           |"<<endl;
+    cout<<"|          7. Change status of card                 |"<<endl;
+    cout<<"|          8. Write list of cards to file           |"<<endl;
+    cout<<"|          9. Read list of card from file           |"<<endl;
+    cout<<"|         10. List card of customer                 |"<<endl;
+    cout<<"|         11. Statistic amount of card of bank      |"<<endl;
+    cout<<"|         12. Exit                                  |"<<endl;
+    cout<<"+---------------------------------------------------+"<<endl;
     int choice;
     cout<<" >> Please select option in menu: ";
     cin>>choice;
@@ -585,17 +671,36 @@ int main()
                 }
             case 8:
                 {
-                    writeListCardToTextFile(cards,n,file);
+                    writeListCardToBinaryFile(cards,n,file);
                     break;
                 }
             case 9:
                 {
-                    readListCardFromTextFile(cards,n,file);
+                    readListCardFromBinaryFile(cards,n,file);
                     break;
                 }
             case 10:
                 {
-                    checked=-1;
+                    cin.ignore();
+                    char customerName[30];
+                    cout<<"Type customer name: ";
+                    cin.getline(customerName,sizeof(customerName)/sizeof(char));
+                    findListCardByCustomerName(cards,n,customerName);
+                    break;
+                }
+            case 11:
+                {
+                    cin.ignore();
+                    char bankName[30];
+                    cout<<"Type bank name: ";
+                    cin.getline(bankName,sizeof(bankName)/sizeof(char));
+                    statisticAmountOfCardByBank(cards,n,bankName);
+                    break;
+                }
+            case 12:
+                {
+                    checked = -1;
+                    goto end_program;
                     break;
                 }
             default:
@@ -607,5 +712,6 @@ int main()
         system("pause");
         system("cls");
     }
+    end_program:
     return 0;
 }
