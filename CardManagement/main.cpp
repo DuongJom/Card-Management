@@ -1,10 +1,12 @@
 #include <iostream>
+#include<fstream>
 #include<string.h>
 #include<math.h>
 #include <unistd.h>
 #include <direct.h>
 #include<limits.h>
 #define MAX 100
+#define file "DATA.DAT"
 using namespace std;
 
 class Card{
@@ -55,8 +57,16 @@ public:
         return this->accountNumber;
     }
 
+    void setAccountNumber(char acc[]){
+        strcpy(accountNumber,acc);
+    }
+
     char* getCustomerName(){
         return this->customerName;
+    }
+
+    void setCustomerName(char cust[]){
+        strcpy(customerName,cust);
     }
 
     char* getDateEffect(){
@@ -121,7 +131,7 @@ public:
         //Neu nhap account number khong hop le thi cho nhap lai
         cin.ignore();
         do{
-            cout<<"Enter account number: ";
+            cout<<"\t+ Enter account number: ";
             cin.getline(accountNumber,sizeof(accountNumber)/sizeof(char));
             //Kiem tra account number hop le hay khong
             if(checkAccountNumberValid(accountNumber)==false || checkNullValue(accountNumber)==false){
@@ -130,7 +140,7 @@ public:
         }while(checkAccountNumberValid(accountNumber)==false || checkNullValue(accountNumber)==false);
 
         do{
-            cout<<"Enter name's customer: ";
+            cout<<"\t+ Enter name's customer: ";
             cin.getline(customerName,sizeof(customerName)/sizeof(char));
             if(checkNullValue(customerName)==false){
                 cout<<">>> INVALID VALUE!"<<endl;
@@ -138,7 +148,7 @@ public:
         }while(checkNullValue(customerName)==false);
 
         do{
-            cout<<"Enter effective date(dd/MM/yyyy): ";
+            cout<<"\t+ Enter effective date(dd/MM/yyyy): ";
             cin.getline(dateEffect,sizeof(dateEffect)/sizeof(char));
             if(checkNullValue(dateEffect)==false){
                 cout<<">>> INVALID VALUE!"<<endl;
@@ -146,7 +156,7 @@ public:
         }while(checkNullValue(dateEffect)==false);
 
         do{
-            cout<<"Enter name's bank: ";
+            cout<<"\t+ Enter name's bank: ";
             cin.getline(bankName,sizeof(bankName)/sizeof(char));
             if(checkNullValue(bankName)==false){
                 cout<<">>> INVALID VALUE!"<<endl;
@@ -156,13 +166,19 @@ public:
 
     //Ham hien thi thong tin Card ra man hinh console
     void showInfo(){
-        printf("|%15s|%25s|%14s|%20s|%15ld|",this->accountNumber,this->customerName,
+        printf("|%15s|%25s|%18s|%20s|%15ld|",this->accountNumber,this->customerName,
                this->dateEffect,this->bankName,this->balance);
         if(this->status==true){
-            printf("%6s%9s|\n"," ","Active");
+            printf("%6s%9s|"," ","Active");
         }
         else{
-            printf("%6s%9s|\n"," ","No active");
+            printf("%6s%9s|"," ","No active");
+        }
+        if(this->getType()==0){
+            printf("%6s%9s|\n"," ","CREDIT");
+        }
+        else{
+            printf("%6s%9s|\n"," ","DEBIT");
         }
     }
     //Ham truu tuong: gui tien va rut tien(dong 147-164)
@@ -443,15 +459,18 @@ void removeCard(Card cards[], int &n, char accountNumber[]){
 //Ham hien thi danh sach card ra man hinh console
 void showListCard(Card cards[], int n){
     //Hien thi tieu de cua bang
-    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
-    printf("|%-15s|%-25s|%12s|%-20s|%-15s|%-15s|\n","Account","Customer","Effective date","Bank","Balance","Status");
-    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
+    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
+    printf("|%-2s%-3s|%-4s%-11s|%-5s%-20s|%-4s%-8s|%-10s%-10s|%-6s%-9s|%-6s%-9s|%-3s%-10s|\n"," ","No."," ","Account"," ","Customer"," ","Effective date"," ","Bank"," ","Balance"," ","Status"," ","Type of card");
+    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
+    int index=1;
     //Duyet qua toan bo danh sach
     for(int i=0;i<n;i++){
         //In thong tin cua tung doi tuong card trong danh sach
+        printf("|%5d",index);
         cards[i].showInfo();
+        index++;
     }
-    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
+    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
     cout<<"COMPLETE SUCCESSFULLY!"<<endl;
 }
 
@@ -475,42 +494,39 @@ bool checkBankExist(Card cards[], int n, char bank[]){
 
 //Ham tra ve danh sach the so huu cua khach hang ten tuong ung
 void findListCardByCustomerName(Card cards[], int n, char customerName[]){
-    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
-    printf("|%-15s|%-25s|%12s|%-20s|%-15s|%-15s|\n","Account","Customer","Effective date","Bank","Balance","Status");
-    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
+    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
+    printf("|%-2s%-3s|%-4s%-11s|%-5s%-20s|%-4s%-8s|%-10s%-10s|%-6s%-9s|%-6s%-9s|%-3s%-10s|\n"," ","No."," ","Account"," ","Customer"," ","Effective date"," ","Bank"," ","Balance"," ","Status"," ","Type of card");
+    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
     if(checkCustomerExist(cards,n,customerName)==true){
+        int index=1;
         //Duyet qua toan bo danh sach
         for(int i=0;i<n;i++){
             if(strcmp(cards[i].getCustomerName(),customerName)==0){
+                printf("|%5d",index);
                 //In thong tin cua tung doi tuong card trong danh sach
                 cards[i].showInfo();
+                index++;
             }
         }
     }
     else{
         printf("|%15s|%25s|%14s|%20s|%15s|%15s|\n"," "," "," "," "," "," ");
     }
-    cout<<"+---------------+-------------------------+--------------+--------------------+---------------+---------------+"<<endl;
+    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
     cout<<"COMPLETE SUCCESSFULLY!"<<endl;
 }
 
 void statisticAmountOfCardByBank(Card cards[], int n, char bank[]){
+    Card filter[100];
+    int m=0;
     if(checkBankExist(cards,n,bank)==true){
         int numberOfCredit=0, numberOfDebit=0;
         for(int i=0;i<n;i++){
             if(strcmp(cards[i].getBankName(),bank)==0){
-                if(cards[i].getType()==0){
-                    numberOfCredit++;
-                }
-                else{
-                    numberOfDebit++;
-                }
+                filter[m++] = cards[i];
             }
         }
-        cout<<"The "<<strupr(bank)<<" has:"<<endl;
-        cout<<"\t+ CREDIT CARD: "<<numberOfCredit<<endl;
-        cout<<"\t+ DEBIT CARD: "<<numberOfDebit<<endl;
-        cout<<"COMPLETE SUCCESSFULLY!"<<endl;
+        showListCard(filter,m);
     }
     else{
         cout<<">>> INVALID BANK!"<<endl;
@@ -518,23 +534,16 @@ void statisticAmountOfCardByBank(Card cards[], int n, char bank[]){
 }
 
 //Ham luu thong tin card vao file nhi phan(Binary File)
-void writeListCardToBinaryFile(Card cards[], int n, char* fileName){
-    //Mo file de ghi
-    FILE* f = fopen(fileName,"wb");
-    //Kiem tra file ton tai hay khong
-    if(f==NULL){
-        cout<<">>> FILE IS CREATING!"<<endl;
-    }
-    //Tien hanh luu so luong card vao file
-    fwrite(&n,sizeof(n),1,f);
-    //Duyet qua toan bo danh sach
-	for(int i=0;i<n;i++){
-        //Ghi thong tin tung phan tu vao file
-		fwrite(&cards[i],sizeof(Card),1,f);
-	}
-	//Dong file
-	fclose(f);
-    cout<<">>> EXPORT TO BINARY FILE SUCESSFULLY!"<<endl;
+void writeListCardToFile(Card cards[], int n, char* fileName){
+   fstream f;
+   f.open(fileName,ios::out);
+   f<<n<<endl;
+   for(int i=0;i<n;i++){
+       f<<cards[i].getAccountNumber()<<","<<cards[i].getCustomerName()<<","<<cards[i].getDateEffect()<<","
+        <<cards[i].getBankName()<<","<<cards[i].getBalance()<<","<<cards[i].getStatus()<<","<<cards[i].getType()<<endl;
+   }
+   f.close();
+    cout<<">>> EXPORT TO FILE SUCESSFULLY!"<<endl;
     //Lay duong dan luu file
     char buff[PATH_MAX];
     _getcwd(buff,PATH_MAX);
@@ -542,25 +551,51 @@ void writeListCardToBinaryFile(Card cards[], int n, char* fileName){
     cout<<">>> Location: "<<current_working_dir<<endl;
 }
 
+void readCard(ifstream &f, Card &card){
+    //Acc,Cus,Date,Bank,Bal,Status,Type
+    char tmp[50],simicolon;
+    double bal;
+    int status;
+    int type;
+    f.getline(tmp,15,',');
+    card.setAccountNumber(tmp);
+    f.getline(tmp,30,',');
+    card.setCustomerName(tmp);
+    f.getline(tmp,11,',');
+    card.setDateEffect(tmp);
+    f.getline(tmp,20,',');
+    card.setBankName(tmp);
+    f>>bal>>simicolon>>status>>simicolon>>type;
+    card.setBalance(bal);
+    card.setStatus(status);
+    card.setType(type);
+    char delChar[3];
+    f.getline(delChar,3,'\n');
+}
 //Ham doc thong tin card tu file nhi phan(Binary File)
-void readListCardFromBinaryFile(Card cards[], int &n, char* fileName){
+void readListCardFromFile(Card cards[], int &n, char* fileName){
+    ifstream fo;
     //Mo file de doc
-    FILE* f = fopen(fileName,"rb");
+    fo.open(fileName);
     //Kiem tra file ton tai hay khong
-	if(f==NULL){
-		cout<<">>> CAN'T READ FILE!!"<<endl;
-		return;
-	}
-	//Tien hanh doc so luong phan tu vao bien n
-	fread(&n,sizeof(n),1,f);
-	//Duyet qua toan bo danh sach
-	for(int i=0;i<n;i++){
-        //Doc thong tin tung phan tu tu file va luu vao danh sach
-		fread(&cards[i],sizeof(Card),1,f);
-	}
-	//Dong file
-	fclose(f);
-    cout<<">>> IMPORT FROM BINARY FILE SUCCESSFULLY!"<<endl;
+    if(!fo){
+        //File khong ton tai thi in ra cau thong bao va thoat khoi ham
+        printf("Loi doc file!\n");
+        return;
+    }
+    //Doc so luong mon an tu file
+    char tmp[30];
+    fo.getline(tmp,sizeof(tmp)/sizeof(char),'\n');
+    n = atoi(tmp);
+    //Lan luot doc du lieu mon an tu file va luu vao danh sach mon an
+    for(int i=0;i<n;i++){
+        //Lan luot doc du lieu mon an tu file va luu vao mon an thu i
+        readCard(fo,cards[i]);
+    }
+    //Dong file
+    fo.close();
+    showListCard(cards,n);
+    cout<<">>> IMPORT FROM FILE SUCCESSFULLY!"<<endl;
 }
 
 int menu(){
@@ -589,7 +624,6 @@ int main()
     Card cards[MAX];
     int n;
     int checked=0;
-    char * file = (char*)"LIST_OF_CARDS.BIN";
     while(checked==0){
         int choice = menu();
         switch(choice){
@@ -671,12 +705,12 @@ int main()
                 }
             case 8:
                 {
-                    writeListCardToBinaryFile(cards,n,file);
+                    writeListCardToFile(cards,n,(char*)file);
                     break;
                 }
             case 9:
                 {
-                    readListCardFromBinaryFile(cards,n,file);
+                    readListCardFromFile(cards,n,(char*)file);
                     break;
                 }
             case 10:
