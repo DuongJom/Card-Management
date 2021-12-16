@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <direct.h>
 #include<limits.h>
+#include<time.h>
+#include<stdlib.h>
 #define MAX 100
 #define file "DATA.DAT"
 using namespace std;
@@ -21,6 +23,7 @@ private:
     char dateEffect[11];
     char bankName[50];
     long balance;
+    int PIN;
     bool status;
     int type;
 public:
@@ -35,6 +38,8 @@ public:
         //Copy chuoi rong vao bien accountNumber
         strcpy(bankName,"");
         //Khoi tao gia tri ban dau cho bien balance va status
+        srand(time(NULL));
+        PIN = rand()%(9999-1000+1)+1000;
         balance = 0;
         status = true;
     }
@@ -49,6 +54,8 @@ public:
         //Copy chuoi bank vao bien bankName
         strcpy(bankName,bank);
         //Khoi tao gia tri ban dau cho bien balance va status
+        srand(time(NULL));
+        PIN = rand()%(9999-1000+1)+1000;
         balance = 0;
         status =_status;
     }
@@ -108,6 +115,15 @@ public:
     void setType(int _type){
         this->type = _type;
     }
+
+    int getPIN(){
+        return PIN;
+    }
+
+    void setPIN(int pin){
+        PIN = pin;
+    }
+
     //Kiem tra account number la chuoi so
     bool checkAccountNumberValid(char accNumber[]){
         int n = strlen(accNumber);
@@ -166,7 +182,7 @@ public:
 
     //Ham hien thi thong tin Card ra man hinh console
     void showInfo(){
-        printf("|%15s|%25s|%18s|%20s|%15ld|",this->accountNumber,this->customerName,
+        printf("|%15s|%25s|%5d|%18s|%20s|%15ld|",this->accountNumber,this->customerName, this->PIN,
                this->dateEffect,this->bankName,this->balance);
         if(this->status==true){
             printf("%6s%9s|"," ","Active");
@@ -386,6 +402,32 @@ void updateCard(Card cards[], int n, int choice, char accountNumber[], char newI
     }
 }
 
+void changePIN(Card cards[], int n, char accountNumber[]){
+    int index = getCardByAccountNumber(cards,n,accountNumber);
+    if(index!=-1){
+        int newPIN, cofirmNewPIN;
+        do{
+            cout<<"Type new PIN: ";
+            cin>>newPIN;
+            if(newPIN<1000||newPIN>=10000){
+                cout<<">>> INCORRECT PIN! PIN HAS 4 DIGITS!"<<endl;
+            }
+        }while(newPIN<1000||newPIN>=10000);
+        cout<<"Confirm new PIN: ";
+        cin>>cofirmNewPIN;
+        if(newPIN==cofirmNewPIN){
+            cards[index].setPIN(newPIN);
+            cout<<">>> CHANGE PIN SUCCESSFULLY!"<<endl;
+        }
+        else{
+            cout<<">>> INCORRECT PIN"<<endl;
+        }
+    }
+    else{
+        cout<<">>> ACCOUNT NOT EXIST!"<<endl;
+    }
+}
+
 //Ham thay doi trang thai card
 void changeStatus(Card cards[], int n, char accountNumber[]){
     //Lay phan tu co account number tuong ung trong mang
@@ -418,13 +460,19 @@ void sendMoneyToCard(Card cards[], int n, char accountNumber[], long _sendMoney)
 }
 
 //Ham rut tien tu account
-void WithDrawMoney(Card cards[], int n, char accountNumber[], long getMoney){
+void WithDrawMoney(Card cards[], int n, char accountNumber[], int pin, long getMoney){
     //Lay phan tu co account number tuong ung trong mang
     int index = getCardByAccountNumber(cards,n,accountNumber);
     //Account ton tai
     if(index!=-1){
-        //Goi ham getMoney() cua class Card
-        cards[index].getMoney(getMoney);
+        if(cards[index].getPIN()==pin){
+            //Goi ham getMoney() cua class Card
+            cards[index].getMoney(getMoney);
+        }
+        else{
+            cout<<">>> INVALID PIN CODE!"<<endl;
+        }
+        
     }
     else{
         cout<<">>> CAN'T FIND CARD HAS ACCOUNT NUMBER "<<accountNumber<<"!"<<endl;
@@ -459,9 +507,9 @@ void removeCard(Card cards[], int &n, char accountNumber[]){
 //Ham hien thi danh sach card ra man hinh console
 void showListCard(Card cards[], int n){
     //Hien thi tieu de cua bang
-    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
-    printf("|%-2s%-3s|%-4s%-11s|%-5s%-20s|%-4s%-8s|%-10s%-10s|%-6s%-9s|%-6s%-9s|%-3s%-10s|\n"," ","No."," ","Account"," ","Customer"," ","Effective date"," ","Bank"," ","Balance"," ","Status"," ","Type of card");
-    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
+    cout<<"+-----+---------------+-------------------------+-----+------------------+--------------------+---------------+---------------+---------------+"<<endl;
+    printf("|%-2s%-3s|%-4s%-11s|%-5s%-20s|%-2s%-3s|%-4s%-8s|%-10s%-10s|%-6s%-9s|%-6s%-9s|%-3s%-10s|\n"," ","No."," ","Account"," ","Customer"," ","PIN"," ","Effective date"," ","Bank"," ","Balance"," ","Status"," ","Type of card");
+    cout<<"+-----+---------------+-------------------------+-----+------------------+--------------------+---------------+---------------+---------------+"<<endl;
     int index=1;
     //Duyet qua toan bo danh sach
     for(int i=0;i<n;i++){
@@ -470,7 +518,7 @@ void showListCard(Card cards[], int n){
         cards[i].showInfo();
         index++;
     }
-    cout<<"+-----+---------------+-------------------------+------------------+--------------------+---------------+---------------+---------------+"<<endl;
+    cout<<"+-----+---------------+-------------------------+-----+------------------+--------------------+---------------+---------------+---------------+"<<endl;
     cout<<"COMPLETE SUCCESSFULLY!"<<endl;
 }
 
@@ -539,7 +587,7 @@ void writeListCardToFile(Card cards[], int n, char* fileName){
    f.open(fileName,ios::out);
    f<<n<<endl;
    for(int i=0;i<n;i++){
-       f<<cards[i].getAccountNumber()<<","<<cards[i].getCustomerName()<<","<<cards[i].getDateEffect()<<","
+       f<<cards[i].getAccountNumber()<<","<<cards[i].getCustomerName()<<","<<cards[i].getPIN()<<","<<cards[i].getDateEffect()<<","
         <<cards[i].getBankName()<<","<<cards[i].getBalance()<<","<<cards[i].getStatus()<<","<<cards[i].getType()<<endl;
    }
    f.close();
@@ -554,13 +602,16 @@ void writeListCardToFile(Card cards[], int n, char* fileName){
 void readCard(ifstream &f, Card &card){
     //Acc,Cus,Date,Bank,Bal,Status,Type
     char tmp[50],simicolon;
+    char delChar[3], del;
     double bal;
     int status;
-    int type;
+    int type,pin;
     f.getline(tmp,15,',');
     card.setAccountNumber(tmp);
     f.getline(tmp,30,',');
     card.setCustomerName(tmp);
+    f>>pin>>del;
+    card.setPIN(pin);
     f.getline(tmp,11,',');
     card.setDateEffect(tmp);
     f.getline(tmp,20,',');
@@ -569,7 +620,6 @@ void readCard(ifstream &f, Card &card){
     card.setBalance(bal);
     card.setStatus(status);
     card.setType(type);
-    char delChar[3];
     f.getline(delChar,3,'\n');
 }
 //Ham doc thong tin card tu file nhi phan(Binary File)
@@ -606,12 +656,13 @@ int menu(){
     cout<<"|          4. Send money                            |"<<endl;
     cout<<"|          5. Withdraw money                        |"<<endl;
     cout<<"|          6. Remove card                           |"<<endl;
-    cout<<"|          7. Change status of card                 |"<<endl;
-    cout<<"|          8. Write list of cards to file           |"<<endl;
-    cout<<"|          9. Read list of card from file           |"<<endl;
-    cout<<"|         10. List card of customer                 |"<<endl;
-    cout<<"|         11. Statistic amount of card of bank      |"<<endl;
-    cout<<"|         12. Exit                                  |"<<endl;
+    cout<<"|          7. Chang PIN code                        |"<<endl;
+    cout<<"|          8. Change status of card                 |"<<endl;
+    cout<<"|          9. Write list of cards to file           |"<<endl;
+    cout<<"|         10. Read list of card from file           |"<<endl;
+    cout<<"|         11. List card of customer                 |"<<endl;
+    cout<<"|         12. Statistic amount of card of bank      |"<<endl;
+    cout<<"|         13. Exit                                  |"<<endl;
     cout<<"+---------------------------------------------------+"<<endl;
     int choice;
     cout<<" >> Please select option in menu: ";
@@ -675,8 +726,11 @@ int main()
                 {
                     char accountNumber[15];
                     long money;
+                    int pin;
                     cout<<"Enter account number: ";
                     cin>>accountNumber;
+                    cout<<"Enter your PIN code: ";
+                    cin>>pin;
                     do{
                         cout<<"Enter money to withdraw: ";
                         cin>>money;
@@ -684,7 +738,7 @@ int main()
                             cout<<"Invalid money!"<<endl;
                         }
                     }while(money<0);
-                    WithDrawMoney(cards,n,accountNumber, money);
+                    WithDrawMoney(cards,n,accountNumber,pin, money);
                     break;
                 }
             case 6:
@@ -700,20 +754,28 @@ int main()
                     char accountNumber[15];
                     cout<<"Enter account number: ";
                     cin>>accountNumber;
-                    changeStatus(cards,n,accountNumber);
+                    changePIN(cards,n,accountNumber);
                     break;
                 }
             case 8:
                 {
-                    writeListCardToFile(cards,n,(char*)file);
+                    char accountNumber[15];
+                    cout<<"Enter account number: ";
+                    cin>>accountNumber;
+                    changeStatus(cards,n,accountNumber);
                     break;
                 }
             case 9:
                 {
-                    readListCardFromFile(cards,n,(char*)file);
+                    writeListCardToFile(cards,n,(char*)file);
                     break;
                 }
             case 10:
+                {
+                    readListCardFromFile(cards,n,(char*)file);
+                    break;
+                }
+            case 11:
                 {
                     cin.ignore();
                     char customerName[30];
@@ -722,7 +784,7 @@ int main()
                     findListCardByCustomerName(cards,n,customerName);
                     break;
                 }
-            case 11:
+            case 12:
                 {
                     cin.ignore();
                     char bankName[30];
@@ -731,7 +793,7 @@ int main()
                     statisticAmountOfCardByBank(cards,n,bankName);
                     break;
                 }
-            case 12:
+            case 13:
                 {
                     checked = -1;
                     goto end_program;
